@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Resale Intelligence</title>
+<style>
+body{font-family:Arial;background:#eef2f7;padding:20px}
+.card{background:white;padding:18px;border-radius:14px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
+input,button{width:100%;padding:12px;border-radius:12px;font-size:16px;margin-top:8px}
+button{background:#16a34a;color:white;border:none;font-weight:bold}
+.verdict{font-size:22px;font-weight:bold;text-align:center}
+.good{color:#16a34a}
+.ok{color:#ca8a04}
+.bad{color:#dc2626}
+</style>
+</head>
+<body>
+
+<h2>Resale Intelligence</h2>
+
+<div class="card">
+<input id="item" placeholder="Enter item name">
+<button onclick="check()">Analyse</button>
+</div>
+
+<div id="output"></div>
+
+<script>
+async function check(){
+const item=document.getElementById('item').value;
+const out=document.getElementById('output');
+out.innerHTML="Checking market...";
+
+const r=await fetch('/api/pricing?item='+encodeURIComponent(item));
+const d=await r.json();
+
+let cls="ok";
+if(d.verdict.includes("GOOD")) cls="good";
+if(d.verdict.includes("AVOID")) cls="bad";
+
+out.innerHTML=`
+<div class="card">eBay avg: £${d.ebay_average}</div>
+<div class="card">Amazon ceiling: £${d.amazon_ceiling}</div>
+<div class="card">Marketplace value: £${d.marketplace_value}</div>
+<div class="card">Quick flip: £${d.quick_flip}</div>
+<div class="card verdict ${cls}">${d.verdict}</div>
+`;
+}
+</script>
+
+</body>
+</html>
