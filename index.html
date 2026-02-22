@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resale Profit Calculator</title>
+<title>Resale Profit Intelligence</title>
 
 <style>
 body{font-family:Arial;background:#f4f6f9;padding:18px}
@@ -10,11 +11,13 @@ h2{text-align:center}
 .card{background:white;padding:16px;border-radius:12px;margin-bottom:14px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
 input,textarea,button{width:100%;padding:12px;border-radius:10px;margin-top:8px;font-size:16px}
 button{background:#16a34a;color:white;border:none;font-weight:bold}
+.market{background:#1f2937}
 textarea{height:110px}
 .result{font-size:20px;font-weight:bold;text-align:center;margin-top:10px}
 .good{color:#16a34a}
 .ok{color:#ca8a04}
 .bad{color:#dc2626}
+.warn{color:#dc2626;font-weight:bold}
 .small{font-size:13px;color:#666;margin-top:6px}
 </style>
 </head>
@@ -23,8 +26,20 @@ textarea{height:110px}
 
 <h2>Resale Profit Intelligence</h2>
 
+<!-- SEARCH -->
 <div class="card">
-<b>1. Paste eBay Sold Prices</b>
+<b>1. Search Item</b>
+<input id="item" placeholder="Enter item name">
+
+<button onclick="searchAll()">Open All Markets</button>
+<button class="market" onclick="ebay()">eBay Sold</button>
+<button class="market" onclick="amazon()">Amazon</button>
+<button class="market" onclick="facebook()">Facebook Marketplace</button>
+</div>
+
+<!-- SOLD PRICES -->
+<div class="card">
+<b>2. Paste eBay Sold Prices</b>
 <textarea id="prices" placeholder="Example:
 39.99
 42
@@ -32,74 +47,120 @@ textarea{height:110px}
 45"></textarea>
 </div>
 
+<!-- COSTS -->
 <div class="card">
-<b>2. Your Costs</b>
+<b>3. Costs</b>
 
 <label>Buying Cost (£)</label>
-<input id="buyCost" type="number" placeholder="Example: 20">
+<input id="buyCost" type="number">
 
 <label>Postage (£)</label>
-<input id="postage" type="number" placeholder="Example: 4.50">
+<input id="postage" type="number" value="4.50">
 
-<label>eBay Fee % (Typical 12.8)</label>
+<label>eBay Fee %</label>
 <input id="feePercent" type="number" value="12.8">
 
-<label>Payment Processing % (Typical 2.9)</label>
+<label>Payment Processing %</label>
 <input id="paymentPercent" type="number" value="2.9">
 
 <button onclick="calculate()">Calculate Profit</button>
+</div>
 
-<div class="small">Tip: Adjust fee % if category differs</div>
+<!-- TARGET PROFIT -->
+<div class="card">
+<b>4. Auction Mode — Target Profit</b>
+
+<label>Desired Profit (£)</label>
+<input id="targetProfit" type="number" value="20">
+
+<button onclick="maxBid()">Calculate Maximum Bid</button>
 </div>
 
 <div id="result"></div>
+<div id="bidResult"></div>
 
 <script>
-function calculate(){
 
-const lines=document.getElementById('prices').value.split(/\n/);
+function searchAll(){ ebay(); amazon(); facebook(); }
 
-const nums=lines
-.map(v=>parseFloat(v.replace(/[^\d.]/g,'')))
-.filter(v=>!isNaN(v));
-
-if(nums.length<2){
-alert("Paste at least 2 prices");
-return;
+function ebay(){
+const item=document.getElementById('item').value;
+if(!item) return;
+window.open("https://www.ebay.co.uk/sch/i.html?_nkw="+encodeURIComponent(item)+"&LH_Sold=1&LH_Complete=1");
 }
 
-const avg=nums.reduce((a,b)=>a+b,0)/nums.length;
+function amazon(){
+const item=document.getElementById('item').value;
+if(!item) return;
+window.open("https://www.amazon.co.uk/s?k="+encodeURIComponent(item));
+}
+
+function facebook(){
+const item=document.getElementById('item').value;
+if(!item) return;
+window.open("https://www.facebook.com/marketplace/search/?query="+encodeURIComponent(item));
+}
+
+function getAverage(){
+const lines=document.getElementById('prices').value.split(/\n/);
+const nums=lines.map(v=>parseFloat(v.replace(/[^\d.]/g,''))).filter(v=>!isNaN(v));
+if(nums.length<2){ alert("Paste at least 2 prices"); return null; }
+return nums.reduce((a,b)=>a+b,0)/nums.length;
+}
+
+function calculate(){
+
+const avg=getAverage();
+if(!avg) return;
 
 const buy=parseFloat(document.getElementById('buyCost').value)||0;
 const postage=parseFloat(document.getElementById('postage').value)||0;
 const feeP=parseFloat(document.getElementById('feePercent').value)||0;
 const payP=parseFloat(document.getElementById('paymentPercent').value)||0;
 
-const feeAmount=avg*(feeP/100);
-const payAmount=avg*(payP/100);
-
-const totalFees=feeAmount+payAmount;
-
+const totalFees=(avg*(feeP/100))+(avg*(payP/100));
 const net=avg-totalFees-postage-buy;
-
 const roi=((net/buy)*100)||0;
 
-let verdict="OK";
-let color="ok";
-
+let verdict="OK", color="ok";
 if(net>30){verdict="STRONG PROFIT";color="good";}
 if(net>10 && net<=30){verdict="PROFITABLE";color="good";}
 if(net>0 && net<=10){verdict="LOW PROFIT";color="ok";}
 if(net<=0){verdict="LOSS";color="bad";}
 
 document.getElementById('result').innerHTML=`
-<div class="card">Detected Average Sale: £${avg.toFixed(2)}</div>
-<div class="card">Total Fees: £${totalFees.toFixed(2)}</div>
+<div class="card">Average Sale: £${avg.toFixed(2)}</div>
+<div class="card">Fees: £${totalFees.toFixed(2)}</div>
 <div class="card">Net Profit: £${net.toFixed(2)}</div>
 <div class="card">ROI: ${roi.toFixed(1)}%</div>
 <div class="card result ${color}">${verdict}</div>
 `;
 }
+
+function maxBid(){
+
+const avg=getAverage();
+if(!avg) return;
+
+const postage=parseFloat(document.getElementById('postage').value)||0;
+const feeP=parseFloat(document.getElementById('feePercent').value)||0;
+const payP=parseFloat(document.getElementById('paymentPercent').value)||0;
+const target=parseFloat(document.getElementById('targetProfit').value)||0;
+
+const totalFees=(avg*(feeP/100))+(avg*(payP/100));
+const maxBuy=avg-totalFees-postage-target;
+const safeBid=maxBuy*0.9;
+
+let warn="";
+if(maxBuy<5) warn="<div class='warn'>Not worth bidding</div>";
+
+document.getElementById('bidResult').innerHTML=`
+<div class="card">Maximum Bid: £${maxBuy.toFixed(2)}</div>
+<div class="card">Safe Auction Bid: £${safeBid.toFixed(2)}</div>
+${warn}
+`;
+}
+
 </script>
 
 </body>
