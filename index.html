@@ -3,42 +3,106 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Resale Quick Compare</title>
+
 <style>
-body{font-family:Arial;background:#f4f6f9;padding:20px}
-.card{background:white;padding:16px;border-radius:12px;margin-bottom:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
-input,button{width:100%;padding:12px;border-radius:10px;margin-top:8px;font-size:16px}
-button{background:#16a34a;color:white;border:none;font-weight:bold}
-.small{font-size:14px;color:#666;margin-top:6px}
+body{
+  font-family:Arial;
+  background:#f4f6f9;
+  padding:18px;
+}
+
+h2{
+  text-align:center;
+}
+
+.card{
+  background:white;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:14px;
+  box-shadow:0 3px 8px rgba(0,0,0,.08);
+}
+
+input,button{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  margin-top:8px;
+  font-size:16px;
+}
+
+button{
+  background:#16a34a;
+  color:white;
+  border:none;
+  font-weight:bold;
+}
+
+.market-btn{
+  background:#1f2937;
+  margin-top:6px;
+}
+
+.result{
+  font-size:18px;
+  font-weight:bold;
+  text-align:center;
+  margin-top:8px;
+}
 </style>
 </head>
+
 <body>
 
 <h2>Resale Quick Compare</h2>
 
+<!-- SEARCH MARKETS -->
 <div class="card">
+<b>1. Search Item</b>
 <input id="item" placeholder="Enter item name">
-<button onclick="search()">Search Markets</button>
+
+<button onclick="search()">Open All Markets</button>
+<button class="market-btn" onclick="ebay()">eBay Sold</button>
+<button class="market-btn" onclick="amazon()">Amazon</button>
+<button class="market-btn" onclick="facebook()">Facebook Marketplace</button>
 </div>
 
+<!-- ENTER AVERAGE -->
 <div class="card">
-<label>eBay sold average (£)</label>
-<input id="ebayAvg" type="number" placeholder="Enter average from eBay">
-<button onclick="calculate()">Calculate Flip Price</button>
+<b>2. Enter eBay Sold Average (£)</b>
+<input id="ebayAvg" type="number" placeholder="Example: 45">
+
+<button onclick="calculate()">Calculate Resale</button>
 </div>
 
+<!-- RESULTS -->
 <div id="result"></div>
 
 <script>
+
 function search(){
 const item=document.getElementById('item').value;
 if(!item) return;
+ebay();
+amazon();
+facebook();
+}
 
+function ebay(){
+const item=document.getElementById('item').value;
 window.open("https://www.ebay.co.uk/sch/i.html?_nkw="+encodeURIComponent(item)+"&LH_Sold=1&LH_Complete=1");
+}
+
+function amazon(){
+const item=document.getElementById('item').value;
 window.open("https://www.amazon.co.uk/s?k="+encodeURIComponent(item));
+}
+
+function facebook(){
+const item=document.getElementById('item').value;
 window.open("https://www.facebook.com/marketplace/search/?query="+encodeURIComponent(item));
 }
 
-<script>
 function calculate(){
 const avg=parseFloat(document.getElementById('ebayAvg').value);
 if(!avg) return;
@@ -50,15 +114,30 @@ const max=avg*1.15;
 let verdict="OK BUY";
 let color="#ca8a04";
 
-if(quick<20) { verdict="LOW VALUE ITEM"; color="#6b7280"; }
-if(normal-quick>25) { verdict="GOOD PROFIT"; color="#16a34a"; }
-if(quick>normal*0.95) { verdict="AVOID"; color="#dc2626"; }
+if(quick<20){
+  verdict="LOW VALUE ITEM";
+  color="#6b7280";
+}
+
+if(normal-quick>25){
+  verdict="GOOD PROFIT";
+  color="#16a34a";
+}
+
+if(quick>normal*0.95){
+  verdict="AVOID";
+  color="#dc2626";
+}
 
 document.getElementById('result').innerHTML=`
 <div class="card">Quick flip: £${quick.toFixed(2)}</div>
 <div class="card">Normal sale: £${normal.toFixed(2)}</div>
 <div class="card">Max patience: £${max.toFixed(2)}</div>
-<div class="card" style="font-size:22px;font-weight:bold;color:${color};text-align:center">${verdict}</div>
+<div class="card result" style="color:${color}">${verdict}</div>
 `;
 }
+
 </script>
+
+</body>
+</html>
