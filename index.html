@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resale Quick Compare</title>
+<style>
+body{font-family:Arial;background:#f4f6f9;padding:20px}
+.card{background:white;padding:16px;border-radius:12px;margin-bottom:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+input,button{width:100%;padding:12px;border-radius:10px;margin-top:8px;font-size:16px}
+button{background:#16a34a;color:white;border:none;font-weight:bold}
+.small{font-size:14px;color:#666;margin-top:6px}
+</style>
+</head>
+<body>
+
+<h2>Resale Quick Compare</h2>
+
+<div class="card">
+<input id="item" placeholder="Enter item name">
+<button onclick="search()">Search Markets</button>
+</div>
+
+<div class="card">
+<label>eBay sold average (£)</label>
+<input id="ebayAvg" type="number" placeholder="Enter average from eBay">
+<button onclick="calculate()">Calculate Flip Price</button>
+</div>
+
+<div id="result"></div>
+
+<script>
+function search(){
+const item=document.getElementById('item').value;
+if(!item) return;
+
+window.open("https://www.ebay.co.uk/sch/i.html?_nkw="+encodeURIComponent(item)+"&LH_Sold=1&LH_Complete=1");
+window.open("https://www.amazon.co.uk/s?k="+encodeURIComponent(item));
+window.open("https://www.facebook.com/marketplace/search/?query="+encodeURIComponent(item));
+}
+
+function calculate(){
+const avg=parseFloat(document.getElementById('ebayAvg').value);
+if(!avg) return;
+
+const quick=avg*0.75;
+const normal=avg*0.95;
+const max=avg*1.2;
+
+document.getElementById('result').innerHTML=`
+<div class="card">Quick flip: £${quick.toFixed(2)}</div>
+<div class="card">Normal sale: £${normal.toFixed(2)}</div>
+<div class="card">Max patience: £${max.toFixed(2)}</div>
+`;
+}
+</script>
+
+</body>
+</html>
